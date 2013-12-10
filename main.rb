@@ -46,6 +46,7 @@ get '/register', logged_in: false do
 end
 
 post '/register', logged_in: false do
+  halt 400, "invalid request" unless params.keys? :user, :password, :email
   @error = case
   when params[:user].empty?
     "Your username can't be blank."
@@ -75,6 +76,7 @@ get '/login', logged_in: false do
 end
 
 post '/login', logged_in: false do
+  halt 400, "invalid request" unless params.keys? :user, :password
   @error = case
   when params[:user].empty?
     "You didn't provide a username."
