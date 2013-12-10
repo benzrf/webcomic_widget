@@ -28,7 +28,7 @@ set :logged_out_redirect, '/'
 set :logged_in_redirect,  '/comics'
 set :logged_in do |should_be|
   condition do
-    target = should_be ? logged_in_redirect : logged_out_redirect
+    target = should_be ? settings.logged_in_redirect : settings.logged_out_redirect
     redirect to target unless logged_in? == should_be
   end
 end
