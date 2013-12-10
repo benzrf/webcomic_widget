@@ -5,29 +5,32 @@ require 'sinatra/sequel'
 Sequel.extension :core_extensions
 database.extension :pg_array
 
+USERS = database[:USERS]
+COMICS = database[:COMICS]
+
 def user(name)
-  database[:users].where(name: name).first
+  USERS.where(name: name).first
 end
 
 def update_user(user)
   where = user.slice(:name)
-  database[:users].where(where).update(user)
+  USERS.where(where).update(user)
 end
 
 def comics(name)
-  database[:comics].where(name: name).all
+  COMICS.where(name: name).all
 end
 
 def user_comic(uname, name)
-  database[:comics].where(uname: uname, name: name).first
+  COMICS.where(uname: uname, name: name).first
 end
 
 def user_comics(uname)
-  database[:comics].where(uname: uname).all
+  COMICS.where(uname: uname).all
 end
 
 def update_comic(comic)
   where = comic.slice(:uname, :name)
-  database[:comics].where(where).update(comic)
+  COMICS.where(where).update(comic)
 end
 
