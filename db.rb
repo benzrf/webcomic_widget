@@ -5,8 +5,8 @@ require 'sinatra/sequel'
 Sequel.extension :core_extensions
 database.extension :pg_array
 
-USERS = database[:USERS]
-COMICS = database[:COMICS]
+USERS = database[:users]
+COMICS = database[:comics]
 
 def user(name)
   USERS.where(name: name).first
