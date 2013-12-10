@@ -1,6 +1,12 @@
 require 'date'
 require 'digest/sha1'
 
+class Hash
+  def slice(*keys)
+    Hash[keys.zip(values_at(*keys))]
+  end
+end
+
 HASH_SALT = ENV['HASH_SALT'] || ''
 def login_hash(user, password)
   salted = user.downcase + HASH_SALT + password
