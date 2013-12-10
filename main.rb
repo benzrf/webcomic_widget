@@ -3,12 +3,12 @@ require './db'
 require 'sinatra'
 
 helpers do
-  def user
+  def current_user
     session[:user]
   end
 
   def logged_in?
-    !!user
+    !!current_user
   end
 end
 
