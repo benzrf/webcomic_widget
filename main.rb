@@ -3,6 +3,10 @@ require './db'
 require 'sinatra'
 
 helpers do
+  def current_login_hash
+    login_hash(params[:user], params[:password])
+  end
+
   def current_user
     session[:user]
   end
