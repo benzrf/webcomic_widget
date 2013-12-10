@@ -33,3 +33,82 @@ set :logged_in do |should_be|
   end
 end
 
+# routes
+
+get '/', logged_in: false do
+  haml :index
+end
+
+get '/register', logged_in: false do
+  haml :register
+end
+
+post '/register', logged_in: false do
+  @error = case
+  when params[:user].empty?
+    "Your username can't be blank."
+  when params[:user] !~ /\A\w+\Z/
+    "The username '#{params[:user]}' contains non-alphanumeric characters."
+  when user(params[:user])
+    "The username '#{params[:user]}' is already taken."
+  when params[:password].empty?
+    "Your password can't be blank."
+  when params[:password] != params[:password_confirm]
+    "The passwords you entered don't match."
+  end
+  unless @error
+    email = params[:email].empty? ? nil : params[:email]
+    new_user = {name: params[:user],
+                login_hash: current_login_hash,
+                email: email}
+    add_user(new_user)
+    haml :registered
+  else
+    haml :register
+  end
+end
+
+get '/login', logged_in: false do
+  haml :login
+end
+
+post '/login', logged_in: false do
+  @error = case
+  when params[:user].empty?
+    "You didn't provide a username."
+  when params[:password].empty?
+    "You didn't provide a password."
+  when !(login_user = user(params[:user]))
+    "Unknown user."
+  when login_user[:login_hash] != current_login_hash
+    "Incorrect password."
+  end
+  unless @error
+    session.options[:expire_after] = 31536000
+    session[:user] = params[:user]
+    redirect to '/comics/'
+  else
+    haml :login
+  end
+end
+
+get '/logout', logged_in: true do
+  session.delete :user
+  redirect to '/'
+end
+
+get '/comics/?', logged_in: true do
+  haml :comics
+end
+
+get '/comics/:comic', logged_in: true do
+  comic = user_comic(current_user, params[:comic])
+  if comic
+    comic[:last_checked] = Date.today
+    update_comic(comic)
+    redirect comic[:url]
+  else
+    redirect to '/comics/'
+  end
+end
+
