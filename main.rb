@@ -16,11 +16,16 @@ SESSION_SECRET = ENV['SECRET_KEY'] || 'dev secret'
 set :session_secret, SESSION_SECRET
 enable :sessions
 
+set :haml, escape_html: true
+
 # should_be denotes whether you should be logged in;
 # otherwise is where to redirect you otherwise
-set :logged_in do |should_be, otherwise|
+set :logged_out_redirect, '/'
+set :logged_in_redirect,  '/comics'
+set :logged_in do |should_be|
   condition do
-    redirect otherwise unless logged_in? == should_be
+    target = should_be ? logged_in_redirect : logged_out_redirect
+    redirect to target unless logged_in? == should_be
   end
 end
 
