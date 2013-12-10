@@ -12,6 +12,10 @@ def user(name)
   USERS.where(name: name).first
 end
 
+def add_user(user)
+  USERS.insert(user)
+end
+
 def update_user(user)
   where = user.slice(:name)
   USERS.where(where).update(user)
@@ -32,5 +36,9 @@ end
 def update_comic(comic)
   where = comic.slice(:uname, :name)
   COMICS.where(where).update(comic)
+end
+
+def add_comic(comic)
+  COMICS.insert(comic)
 end
 
