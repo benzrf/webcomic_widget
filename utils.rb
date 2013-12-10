@@ -5,6 +5,9 @@ class Hash
   def slice(*keys)
     Hash[keys.zip(values_at(*keys))]
   end
+  def keys?(*keys)
+    keys.flatten.all? {|k| key? k}
+  end
 end
 
 HASH_SALT = ENV['HASH_SALT'] || ''
