@@ -12,7 +12,7 @@
 		:javascript
 			$(function(){
 				$("#show-updated").click(function(){
-					$(".updated a").each(function(idx, elem){
+					$(".updated .comic-link").each(function(idx, elem){
 						window.open(elem.href, '_blank');
 					});
 				});
@@ -43,7 +43,7 @@
 						%tr{class: comic[:updated] ? 'danger updated' : 'success not-updated'}
 							%td= comic[:name]
 							%td
-								%a{href: url("/comics/#{comic[:name]}"), target: '_blank'}
+								%a.comic-link{href: url("/comics/#{comic[:name]}"), target: '_blank'}
 									= comic[:url]
 							%td= comic[:last_checked]
 							%td= comic[:updated] ? "Yes" : "No"
