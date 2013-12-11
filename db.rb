@@ -30,7 +30,7 @@ def user_comic(uname, name)
 end
 
 def user_comics(uname)
-  COMICS.where(uname: uname).all
+  COMICS.where(uname: uname).order(:name).all
 end
 
 def update_comic(comic)
