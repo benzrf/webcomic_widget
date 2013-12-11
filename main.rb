@@ -4,11 +4,11 @@ require 'sinatra'
 
 helpers do
   def current_login_hash
-    login_hash(params[:user], params[:password])
+    login_hash(params['user'], params['password'])
   end
 
   def current_user
-    session[:user]
+    session['user']
   end
 
   def logged_in?
@@ -46,22 +46,22 @@ get '/register', logged_in: false do
 end
 
 post '/register', logged_in: false do
-  halt 400, "invalid request" unless params.keys? :user, :password, :email
+  halt 400, "invalid request" unless params.keys? 'user', 'password', 'email'
   @error = case
-  when params[:user].empty?
+  when params['user'].empty?
     "Your username can't be blank."
-  when params[:user] !~ /\A\w+\Z/
-    "The username '#{params[:user]}' contains non-alphanumeric characters."
-  when user(params[:user])
-    "The username '#{params[:user]}' is already taken."
-  when params[:password].empty?
+  when params['user'] !~ /\A\w+\Z/
+    "The username '#{params['user']}' contains non-alphanumeric characters."
+  when user(params['user'])
+    "The username '#{params['user']}' is already taken."
+  when params['password'].empty?
     "Your password can't be blank."
-  when params[:password] != params[:password_confirm]
+  when params['password'] != params['password_confirm']
     "The passwords you entered don't match."
   end
   unless @error
-    email = params[:email].empty? ? nil : params[:email]
-    new_user = {name: params[:user],
+    email = params['email'].empty? ? nil : params['email']
+    new_user = {name: params['user'],
                 login_hash: current_login_hash,
                 email: email}
     add_user(new_user)
@@ -76,20 +76,20 @@ get '/login', logged_in: false do
 end
 
 post '/login', logged_in: false do
-  halt 400, "invalid request" unless params.keys? :user, :password
+  halt 400, "invalid request" unless params.keys? 'user', 'password'
   @error = case
-  when params[:user].empty?
+  when params['user'].empty?
     "You didn't provide a username."
-  when params[:password].empty?
+  when params['password'].empty?
     "You didn't provide a password."
-  when !(login_user = user(params[:user]))
+  when !(login_user = user(params['user']))
     "Unknown user."
   when login_user[:login_hash] != current_login_hash
     "Incorrect password."
   end
   unless @error
     session.options[:expire_after] = 31536000
-    session[:user] = params[:user]
+    session['user'] = params['user']
     redirect to '/comics/'
   else
     haml :login
@@ -106,7 +106,7 @@ get '/comics/?', logged_in: true do
 end
 
 get '/comics/:comic', logged_in: true do
-  comic = user_comic(current_user, params[:comic])
+  comic = user_comic(current_user, params['comic'])
   if comic
     comic[:last_checked] = Date.today
     update_comic(comic)
