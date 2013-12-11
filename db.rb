@@ -39,6 +39,8 @@ def update_comic(comic)
 end
 
 def add_comic(comic)
+  comic = comic.dup
+  comic[:schedule] = comic[:schedule].pg_array
   COMICS.insert(comic)
 end
 
