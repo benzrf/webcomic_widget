@@ -102,6 +102,11 @@ get '/logout', logged_in: true do
 end
 
 get '/comics/?', logged_in: true do
+  @comics = user_comics(current_user)
+  @comics.each do |comic|
+    updated = updated_between? comic[:schedule], comic[:last_checked]
+    comic[:updated] = updated
+  end
   haml :comics
 end
 
