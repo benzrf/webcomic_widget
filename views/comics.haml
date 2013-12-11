@@ -16,13 +16,21 @@
 						window.open(elem.href, '_blank');
 					});
 				});
+				$("#show-updating").click(function(){
+					$(".updating .comic-link").each(function(idx, elem){
+						window.open(elem.href, '_blank');
+					});
+				});
 			});
 	%body
 		.container
 			%h1 Your comics
 			.pull-left
-				%button#show-updated.btn.btn-primary.btn-lg{type: 'button'}
-					Show all updated
+				.btn-group
+					%button#show-updated.btn.btn-primary.btn-lg{type: 'button'}
+						Show all updated
+					%button#show-updating.btn.btn-primary.btn-lg{type: 'button'}
+						Show all updating
 				%a.btn.btn-default.btn-lg{href: url('/add_comic')}
 					Add a comic
 			.pull-right
@@ -36,17 +44,20 @@
 						%th Name
 						%th Site
 						%th Last checked
-						%th Updated?
+						%th Updated since?
+						%th Updates today?
 						%th Edit
 				%tbody
 					- @comics.each do |comic|
-						%tr{class: comic[:updated] ? 'danger updated' : 'success not-updated'}
+						%tr{class: [comic[:updated] ? 'danger updated' : 'success not-updated',
+												comic[:updates] ? 'updating' : 'not-updating']}
 							%td= comic[:name]
 							%td
 								%a.comic-link{href: url("/comics/#{comic[:name]}"), target: '_blank'}
 									= comic[:url]
 							%td= comic[:last_checked]
 							%td= comic[:updated] ? "Yes" : "No"
+							%td= comic[:updates] ? "Yes" : "No"
 							%td
 								%a.btn.btn-primary.btn-xs{href: url("/edit_comic/#{comic[:name]}")}
 									= "Edit #{comic[:name]}"

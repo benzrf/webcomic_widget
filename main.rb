@@ -105,7 +105,9 @@ get '/comics/?', logged_in: true do
   @comics = user_comics(current_user)
   @comics.each do |comic|
     updated = updated_between? comic[:schedule], comic[:last_checked]
+    updates = updates_today? comic[:schedule]
     comic[:updated] = updated
+    comic[:updates] = updates
   end
   haml :comics
 end

@@ -26,3 +26,7 @@ def updated_between?(schedule, from, til=Date.today)
   false
 end
 
+def updates_today?(schedule)
+  schedule[Date.today.wday]
+end
+
