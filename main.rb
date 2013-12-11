@@ -25,7 +25,7 @@ set :haml, escape_html: true
 # should_be denotes whether you should be logged in;
 # otherwise is where to redirect you otherwise
 set :logged_out_redirect, '/'
-set :logged_in_redirect,  '/comics'
+set :logged_in_redirect,  '/comics/'
 set :logged_in do |should_be|
   condition do
     target = should_be ?
