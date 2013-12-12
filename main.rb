@@ -1,6 +1,7 @@
 require './utils'
 require './db'
 require 'sinatra'
+require 'sinatra/json'
 
 helpers do
   def current_login_hash
@@ -120,6 +121,43 @@ get '/comics/:comic', logged_in: true do
     redirect comic[:url]
   else
     redirect to '/comics/'
+  end
+end
+
+get '/add_comic', logged_in: true do
+  haml :add_comic
+end
+
+post '/add_comic', logged_in: true do
+  halt 400, "invalid request" unless params.keys? 'name', 'url'
+  @error = case
+  when params['name'].empty?
+    "You didn't provide a name."
+  when params['url'].empty?
+    "You didn't provide a URL."
+  when user_comic(current_user, params['name'])
+    "You're already tracking that comic."
+  end
+  unless @error
+    schedule = LDAYS.map {|day| !!params["updates-#{day}"]}
+    new_comic = {uname: current_user,
+                 name: params['name'],
+                 url: params['url'],
+                 schedule: schedule,
+                 last_checked: nil}
+    add_comic(new_comic)
+    redirect to '/comics/'
+  else
+    haml :add_comic
+  end
+end
+
+post '/guess', provides: 'json' do
+  guess = comics(params[:comic]).first
+  if guess
+    json guess.slice :name, :url, :schedule
+  else
+    json nil
   end
 end
 

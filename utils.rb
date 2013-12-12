@@ -16,6 +16,11 @@ def login_hash(user, password)
   Digest::SHA1.hexdigest(salted)
 end
 
+DAYS = %w{Sunday Monday Tuesday
+          Wednesday Thursday Friday
+          Saturday}
+LDAYS = DAYS.map &:downcase
+
 def updated_between?(schedule, from, til=Date.today)
   return true unless from
   from += 1
