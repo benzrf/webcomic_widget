@@ -11,10 +11,6 @@ helpers do
   def current_user
     session['user']
   end
-
-  def logged_in?
-    !!current_user
-  end
 end
 
 SESSION_SECRET = ENV['SECRET_KEY'] || 'dev secret'
@@ -32,7 +28,8 @@ set :logged_in do |should_be|
     target = should_be ?
       settings.logged_out_redirect :
       settings.logged_in_redirect
-    redirect to target unless logged_in? == should_be
+    logged_in = !!current_user
+    redirect to target unless logged_in == should_be
   end
 end
 
@@ -158,6 +155,38 @@ post '/guess', provides: 'json' do
     json guess.slice :name, :url, :schedule
   else
     json nil
+  end
+end
+
+get '/edit_comic/:comic', logged_in: true do
+  @comic = user_comic(current_user, params['comic'])
+  if @comic
+    haml :edit_comic
+  else
+    redirect to '/comics/'
+  end
+end
+
+post '/edit_comic/:comic', logged_in: true do
+  halt 400, "invalid request" unless params.keys? 'url'
+  @comic = user_comic(current_user, params[:comic])
+  redirect to '/comics/' unless @comic
+  @error = case
+  when params['url'].empty?
+    "You didn't provide a URL."
+  end
+  unless @error
+    schedule = LDAYS.map {|day| !!params["updates-#{day}"]}
+    updated_comic = {uname: current_user,
+                     name: params[:comic],
+                     url: params['url'],
+                     schedule: schedule,
+                     last_checked: @comic[:last_checked]}
+    p updated_comic
+    update_comic(updated_comic)
+    redirect to '/comics/'
+  else
+    haml :edit_comic
   end
 end
 

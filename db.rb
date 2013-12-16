@@ -34,13 +34,17 @@ def user_comics(uname)
 end
 
 def update_comic(comic)
+  comic = comic.dup
   where = comic.slice(:uname, :name)
+  comic[:schedule] = comic[:schedule].pg_array
+  comic[:url].prepend 'http://' unless comic[:url].start_with? 'http://'
   COMICS.where(where).update(comic)
 end
 
 def add_comic(comic)
   comic = comic.dup
   comic[:schedule] = comic[:schedule].pg_array
+  comic[:url].prepend 'http://' unless comic[:url].start_with? 'http://'
   COMICS.insert(comic)
 end
 
