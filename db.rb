@@ -48,3 +48,7 @@ def add_comic(comic)
   COMICS.insert(comic)
 end
 
+def delete_user_comic(uname, name)
+  COMICS.where(uname: uname, name: name).delete
+end
+

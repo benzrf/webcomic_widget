@@ -150,7 +150,7 @@ post '/add_comic', logged_in: true do
 end
 
 post '/guess', provides: 'json' do
-  guess = comics(params[:comic]).first
+  guess = comics(params['comic']).first
   if guess
     json guess.slice :name, :url, :schedule
   else
@@ -169,7 +169,7 @@ end
 
 post '/edit_comic/:comic', logged_in: true do
   halt 400, "invalid request" unless params.keys? 'url'
-  @comic = user_comic(current_user, params[:comic])
+  @comic = user_comic(current_user, params['comic'])
   redirect to '/comics/' unless @comic
   @error = case
   when params['url'].empty?
@@ -178,15 +178,31 @@ post '/edit_comic/:comic', logged_in: true do
   unless @error
     schedule = LDAYS.map {|day| !!params["updates-#{day}"]}
     updated_comic = {uname: current_user,
-                     name: params[:comic],
+                     name: params['comic'],
                      url: params['url'],
                      schedule: schedule,
                      last_checked: @comic[:last_checked]}
-    p updated_comic
     update_comic(updated_comic)
     redirect to '/comics/'
   else
     haml :edit_comic
   end
+end
+
+get '/delete_comic/:comic', logged_in: true do
+  @comic = user_comic(current_user, params['comic'])
+  if @comic
+    haml :delete_comic
+  else
+    redirect to '/comics/'
+  end
+end
+
+post '/delete_comic/:comic', logged_in: true do
+  @comic = user_comic(current_user, params['comic'])
+  if @comic and params['confirm'] == 'true'
+    delete_user_comic(current_user, params['comic'])
+  end
+  redirect to '/comics/'
 end
 
