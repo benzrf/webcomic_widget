@@ -10,18 +10,38 @@
 				width: 75%;
 			}
 		:javascript
+			function delayedReload()
+			{
+				setTimeout(function(){window.location.reload();}, 2000);
+			}
 			$(function(){
 				$("#show-updated").click(function(){
+					var any = false;
 					$(".updated .comic-link").each(function(idx, elem){
+						any = true;
 						window.open(elem.href, '_blank');
 					});
-					window.location.reload();
+					if (any)
+					{
+						delayedReload();
+					}
 				});
 				$("#show-updating").click(function(){
+					var any = false;
 					$(".updating .comic-link").each(function(idx, elem){
+						if ($(elem).parent().parent().hasClass("updated"))
+						{
+							any = true;
+						}
 						window.open(elem.href, '_blank');
 					});
-					window.location.reload();
+					if (any)
+					{
+						delayedReload();
+					}
+				});
+				$(".updated .comic-link").click(function(){
+					delayedReload();
 				});
 			});
 	%body
