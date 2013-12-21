@@ -16,8 +16,8 @@ def add_user(user)
   USERS.insert(user)
 end
 
-def update_user(user)
-  where = user.slice(:name)
+def update_user(user, original=user)
+  where = original.slice(:name)
   USERS.where(where).update(user)
 end
 
@@ -45,9 +45,9 @@ def user_comics(uname)
   comics.partition {|comic| updated? comic}.flatten 1
 end
 
-def update_comic(comic)
+def update_comic(comic, original=comic)
   comic = comic.dup
-  where = comic.slice(:uname, :name)
+  where = original.slice(:uname, :name)
   comic[:schedule] = comic[:schedule].pg_array
   comic[:url].prepend 'http://' unless comic[:url].start_with? 'http://'
   COMICS.where(where).update(comic)

@@ -16,6 +16,12 @@
 				.alert.alert-danger= @error
 			%form.form-horizontal{role: 'form', method: 'post'}
 				.form-group
+					%label.col-lg-3.control-label{for: 'name'}
+						Comic Name
+					.col-lg-6
+						%input#name.form-control{type: 'text', name: 'name',
+							placeholder: 'Comic Name', value: params["name"] || @comic[:name]}
+				.form-group
 					%label.col-lg-3.control-label{for: 'url'}
 						Comic URL
 					.col-lg-6

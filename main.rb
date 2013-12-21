@@ -178,17 +178,19 @@ post '/edit_comic/:comic', logged_in: true do
   @comic = user_comic(current_user, params['comic'])
   redirect to '/comics/' unless @comic
   @error = case
+  when params['name'].empty?
+    "You didn't provide a name."
   when params['url'].empty?
     "You didn't provide a URL."
   end
   unless @error
     schedule = LDAYS.map {|day| !!params["updates-#{day}"]}
     updated_comic = {uname: current_user,
-                     name: params['comic'],
+                     name: params['name'],
                      url: params['url'],
                      schedule: schedule,
                      last_checked: @comic[:last_checked]}
-    update_comic(updated_comic)
+    update_comic(updated_comic, @comic)
     redirect to '/comics/'
   else
     haml :edit_comic
