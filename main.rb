@@ -102,8 +102,8 @@ end
 get '/comics/?', logged_in: true do
   @comics = user_comics(current_user)
   @comics.each do |comic|
-    updated = updated_between? comic[:schedule], comic[:last_checked]
-    updates = updates_today? comic[:schedule]
+    updated = updated? comic
+    updates = updates_today? comic
     comic[:updated] = updated
     comic[:updates] = updates
   end
@@ -150,7 +150,7 @@ post '/add_comic', logged_in: true do
 end
 
 post '/guess', provides: 'json' do
-  guess = comics(params['comic']).first
+  guess = fuzzy_comics(params['comic']).first
   if guess
     json guess.slice :name, :url, :schedule
   else

@@ -25,12 +25,19 @@ def comics(name)
   COMICS.where(name: name).all
 end
 
+def fuzzy_comics(name)
+  name = name.downcase
+  distance = [3, name.length / 3].max
+  COMICS.where{levenshtein(name, lower(:name)) < distance}.all
+end
+
 def user_comic(uname, name)
   COMICS.where(uname: uname, name: name).first
 end
 
 def user_comics(uname)
-  COMICS.where(uname: uname).order(:name).all
+  comics = COMICS.where(uname: uname).order(:name).all
+  comics.partition {|comic| updated? comic}.flatten 1
 end
 
 def update_comic(comic)

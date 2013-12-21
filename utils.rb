@@ -31,7 +31,11 @@ def updated_between?(schedule, from, til=Date.today)
   false
 end
 
-def updates_today?(schedule)
-  schedule[Date.today.wday]
+def updated?(comic)
+  updated_between?(comic[:schedule], comic[:last_checked])
+end
+
+def updates_today?(comic)
+  comic[:schedule][Date.today.wday]
 end
 
