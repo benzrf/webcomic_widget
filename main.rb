@@ -117,7 +117,7 @@ get '/comics/:comic', logged_in: true do
     update_comic(comic)
     redirect comic[:url]
   else
-    redirect to '/comics/'
+    halt 404
   end
 end
 
@@ -169,14 +169,14 @@ get '/edit_comic/:comic', logged_in: true do
   if @comic
     haml :edit_comic
   else
-    redirect to '/comics/'
+    halt 404
   end
 end
 
 post '/edit_comic/:comic', logged_in: true do
   halt 400, "invalid request" unless params.keys? 'url'
   @comic = user_comic(current_user, params['comic'])
-  redirect to '/comics/' unless @comic
+  halt 404 unless @comic
   @error = case
   when params['name'].empty?
     "You didn't provide a name."
@@ -202,12 +202,13 @@ get '/delete_comic/:comic', logged_in: true do
   if @comic
     haml :delete_comic
   else
-    redirect to '/comics/'
+    halt 404
   end
 end
 
 post '/delete_comic/:comic', logged_in: true do
   @comic = user_comic(current_user, params['comic'])
+  halt 404 unless @comic
   if @comic and params['confirm'] == 'true'
     delete_user_comic(current_user, params['comic'])
   end
