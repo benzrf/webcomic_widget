@@ -31,6 +31,11 @@ def fuzzy_comics(name)
   COMICS.where{levenshtein(name, lower(:name)) < distance}.all
 end
 
+def comic_completions(substr)
+  pat = "%#{substr}%"
+  COMICS.where(Sequel.like(:name, pat)).all
+end
+
 def user_comic(uname, name)
   COMICS.where(uname: uname, name: name).first
 end

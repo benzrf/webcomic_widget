@@ -4,26 +4,36 @@
 		%meta{charset: 'utf-8'}
 		%title Webcomic Tracker - Add a comic
 		%script{src: "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"}
+		%script{src: "/js/jquery.autocomplete.min.js"}
 		%link{rel: 'stylesheet', href: "//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"}
+		%link{rel: 'stylesheet', href: "/css/jquery.autocomplete.css"}
 		:css
 			.container {
 				width: 50%;
 			}
 		:javascript
+			function fillForm(result)
+			{
+				var false7 = [false, false, false, false, false, false, false];
+				result = result || {'name': comic, 'url': '', 'schedule': false7};
+				$("#name").val(result.name);
+				$("#url"). val(result.url);
+				for (var i = 0; i < 7; i++)
+				{
+					var day = #{LDAYS}[i];
+					$("#updates-" + day).prop('checked', result.schedule[i]);
+				}
+			}
 			$(function(){
-				$("#guess").click(function(){
-					var comic = $("#name").val();
-					$.post("#{url('/guess')}", {'comic': comic}, function(result){
-						var false7 = [false, false, false, false, false, false, false];
-						result = result || {'name': comic, 'url': '', 'schedule': false7};
-						$("#name").val(result.name);
-						$("#url"). val(result.url);
-						for (var i = 0; i < 7; i++)
-						{
-							var day = #{LDAYS}[i];
-							$("#updates-" + day).prop('checked', result.schedule[i]);
-						}
-					}, 'json');
+				$("#name").autocomplete({
+					serviceUrl: '/complete',
+					lookupLimit: 10,
+					onSelect: fillForm,
+					minChars: 2,
+					type: 'POST',
+					paramName: 'comic',
+				});
+				$("#name").keypress(function(event) {
 				});
 			});
 	%body
@@ -38,9 +48,6 @@
 					.col-lg-6
 						%input#name.form-control{type: 'text', name: 'name',
 							placeholder: 'Comic Name', value: params["name"]}
-					.col-lg-3
-						%button#guess.btn.btn-primary{type: 'button'}
-							Guess details
 				.form-group
 					%label.col-lg-3.control-label{for: 'url'}
 						Comic URL

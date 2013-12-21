@@ -149,10 +149,16 @@ post '/add_comic', logged_in: true do
   end
 end
 
-post '/guess', provides: 'json' do
-  guess = fuzzy_comics(params['comic']).first
-  if guess
-    json guess.slice :name, :url, :schedule
+post '/complete', provides: 'json' do
+  halt 400, "invalid request" unless params['comic'] =~ /.{3,}/
+  completions = comic_completions(params['comic'])
+  completions.uniq! {|comic| comic[:name]}
+  if completions
+    suggestions = completions.map {|comic| comic.slice :name, :url, :schedule}
+    suggestions.each {|comic| comic[:value] = comic[:name]}
+    response = {query: params['comic'],
+                suggestions: suggestions}
+    json response
   else
     json nil
   end
