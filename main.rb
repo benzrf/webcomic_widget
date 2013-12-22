@@ -2,6 +2,7 @@ require './utils'
 require './db'
 require 'sinatra'
 require 'sinatra/json'
+require 'rack/csrf'
 
 helpers do
   def current_login_hash(pass_source='password')
@@ -11,11 +12,17 @@ helpers do
   def current_user
     session['user']
   end
+
+  def csrf_tag
+    Rack::Csrf.csrf_tag(env)
+  end
 end
 
 SESSION_SECRET = ENV['SECRET_KEY'] || 'dev secret'
 set :session_secret, SESSION_SECRET
 enable :sessions
+
+use Rack::Csrf, skip: ['POST:/complete']
 
 set :haml, escape_html: true
 
@@ -154,10 +161,9 @@ post '/complete', provides: 'json' do
   completions = comic_completions(params['comic'])
   completions.uniq! {|comic| comic[:name]}
   if completions
-    suggestions = completions.map {|comic| comic.slice :name, :url, :schedule}
-    suggestions.each {|comic| comic[:value] = comic[:name]}
+    completions.each {|comic| comic[:value] = comic[:name]}
     response = {query: params['comic'],
-                suggestions: suggestions}
+                suggestions: completions}
     json response
   else
     json nil

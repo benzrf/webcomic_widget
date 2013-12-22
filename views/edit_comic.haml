@@ -34,6 +34,7 @@
 			- if @error
 				.alert.alert-danger= @error
 			%form.form-horizontal{role: 'form', method: 'post'}
+				!= csrf_tag
 				.form-group
 					%label.col-lg-3.control-label{for: 'name'}
 						Comic Name

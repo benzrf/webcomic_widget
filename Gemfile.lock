@@ -6,12 +6,14 @@ GEM
       tilt
     kgio (2.8.1)
     multi_json (1.8.2)
-    pg (0.17.0)
+    pg (0.17.1)
     rack (1.5.2)
     rack-protection (1.5.1)
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
+    rack_csrf (2.4.0)
+      rack (>= 0.9)
     raindrops (0.12.0)
     sequel (4.5.0)
     sinatra (1.4.4)
@@ -40,6 +42,7 @@ PLATFORMS
 DEPENDENCIES
   haml
   pg
+  rack_csrf
   sequel
   sinatra
   sinatra-contrib
