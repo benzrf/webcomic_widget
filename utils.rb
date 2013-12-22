@@ -11,7 +11,7 @@ class Hash
 end
 
 HASH_SALT = ENV['HASH_SALT'] || ''
-def login_hash(user, password)
+def old_gen_hash(user, password)
   salted = user.downcase + HASH_SALT + password
   Digest::SHA1.hexdigest(salted)
 end

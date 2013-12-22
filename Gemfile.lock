@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     backports (3.3.5)
+    bcrypt-ruby (3.1.2)
     haml (4.0.4)
       tilt
     kgio (2.8.1)
@@ -40,6 +41,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bcrypt-ruby
   haml
   pg
   rack_csrf

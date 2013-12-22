@@ -3,14 +3,32 @@ require './db'
 require 'sinatra'
 require 'sinatra/json'
 require 'rack/csrf'
+require 'bcrypt'
 
 helpers do
-  def current_login_hash(pass_source='password')
-    login_hash(params['user'] || current_user, params[pass_source])
+  def gen_hash(pass_source='password')
+    'bcrypt$' + BCrypt::Password.create(current_user + params[pass_source])
+  end
+
+  def password_correct?(pass_source='password')
+    given = params[pass_source]
+    hash_col = user(current_user)[:login_hash]
+    algo, hash = hash_col.split('$', 2)
+    case algo
+    when 'sha1'
+      given_hash = old_gen_hash(current_user, given)
+      hash == given_hash
+    when 'bcrypt'
+      BCrypt::Password.new(hash) == current_user + given
+    end
   end
 
   def current_user
-    session['user']
+    params['user'] || session['user']
+  end
+
+  def logged_in?
+    !!session['user']
   end
 
   def csrf_tag
@@ -35,8 +53,7 @@ set :logged_in do |should_be|
     target = should_be ?
       settings.logged_out_redirect :
       settings.logged_in_redirect
-    logged_in = !!current_user
-    redirect to target unless logged_in == should_be
+    redirect to target unless logged_in? == should_be
   end
 end
 
@@ -67,7 +84,7 @@ post '/register', logged_in: false do
   unless @error
     email = params['email'].empty? ? nil : params['email']
     new_user = {name: params['user'],
-                login_hash: current_login_hash,
+                login_hash: gen_hash,
                 email: email}
     add_user(new_user)
     haml :registered
@@ -89,7 +106,7 @@ post '/login', logged_in: false do
     "You didn't provide a password."
   when !(login_user = user(params['user']))
     "Unknown user."
-  when login_user[:login_hash] != current_login_hash
+  when !password_correct?
     "Incorrect password."
   end
   unless @error
@@ -231,7 +248,7 @@ post '/edit_account', logged_in: true do
   halt 400, "invalid request" unless params.keys? needed_params
   @user = user(current_user)
   @error = case
-  when @user[:login_hash] != current_login_hash
+  when !password_correct?
     "Incorrect password."
   when params['new_password'] != params['password_confirm']
     "The new passwords you entered don't match."
@@ -241,7 +258,7 @@ post '/edit_account', logged_in: true do
     updated_user = {name: current_user,
                     email: email}
     unless params['new_password'].empty?
-      updated_user[:login_hash] = current_login_hash('new_password')
+      updated_user[:login_hash] = gen_hash('new_password')
     end
     update_user(updated_user)
     redirect to '/comics/'
