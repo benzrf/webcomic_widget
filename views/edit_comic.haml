@@ -9,6 +9,25 @@
 			.container {
 				width: 50%;
 			}
+		:javascript
+			function fillForm(result)
+			{
+				result = result || {'name': null, 'url': null, 'schedule': null};
+				if (result.name) $("#name").val(result.name);
+				if (result.url)  $("#url"). val(result.url);
+				if (result.schedule)
+				{
+					for (var i = 0; i < 7; i++)
+					{
+						var day = #{LDAYS}[i];
+						$("#updates-" + day).prop('checked', result.schedule[i]);
+					}
+				}
+			}
+			function setSchedule(schedule)
+			{
+				fillForm({schedule: schedule});
+			}
 	%body
 		.container
 			%h1 Editing #{@comic[:name]}
@@ -28,7 +47,7 @@
 						%input#url.form-control{type: 'text', name: 'url',
 							placeholder: 'Comic URL', value: params["url"] || @comic[:url]}
 				.form-group
-					%label.col-lg-3.control-label{for: 'url'}
+					%label.col-lg-3.control-label
 						Update Schedule
 					.col-lg-6
 						- LDAYS.each do |day|
@@ -39,9 +58,25 @@
 								%input{type: 'checkbox', name: cb_name,
 									id: cb_name, checked: params[cb_name] || updates}>
 				.form-group
+					%label.col-lg-3.control-label
+						Common Schedules
+					.col-lg-6
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([false, true, false, true, false, true, false])'}
+							MWF
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([false, false, true, false, true, false, false])'}
+							TT
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([true, true, true, true, true, true, true])'}
+							Every day
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([false, true, true, true, true, true, false])'}
+							Weekdays
+				.form-group
 					.col-lg-offset-3.col-lg-9
 						%button.btn.btn-primary.btn-lg{type: 'submit'}
-							Update
+							Save
 						%a.btn.btn-default.btn-lg{href: url('/comics/')}
 							Cancel
 

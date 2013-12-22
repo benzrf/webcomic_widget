@@ -14,15 +14,21 @@
 		:javascript
 			function fillForm(result)
 			{
-				var false7 = [false, false, false, false, false, false, false];
-				result = result || {'name': comic, 'url': '', 'schedule': false7};
-				$("#name").val(result.name);
-				$("#url"). val(result.url);
-				for (var i = 0; i < 7; i++)
+				result = result || {'name': null, 'url': null, 'schedule': null};
+				if (result.name) $("#name").val(result.name);
+				if (result.url)  $("#url"). val(result.url);
+				if (result.schedule)
 				{
-					var day = #{LDAYS}[i];
-					$("#updates-" + day).prop('checked', result.schedule[i]);
+					for (var i = 0; i < 7; i++)
+					{
+						var day = #{LDAYS}[i];
+						$("#updates-" + day).prop('checked', result.schedule[i]);
+					}
 				}
+			}
+			function setSchedule(schedule)
+			{
+				fillForm({schedule: schedule});
 			}
 			$(function(){
 				$("#name").autocomplete({
@@ -55,7 +61,7 @@
 						%input#url.form-control{type: 'text', name: 'url',
 						placeholder: 'Comic URL', value: params["url"]}
 				.form-group
-					%label.col-lg-3.control-label{for: 'url'}
+					%label.col-lg-3.control-label
 						Update Schedule
 					.col-lg-6
 						- LDAYS.each do |day|
@@ -64,6 +70,22 @@
 								- cb_name = "updates-#{day}"
 								%input{type: 'checkbox', name: cb_name,
 									id: cb_name, checked: params[cb_name]}>
+				.form-group
+					%label.col-lg-3.control-label
+						Common Schedules
+					.col-lg-6
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([false, true, false, true, false, true, false])'}
+							MWF
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([false, false, true, false, true, false, false])'}
+							TT
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([true, true, true, true, true, true, true])'}
+							Every day
+						%button.btn.btn-primary.btn-sm{type: 'button',
+							onclick: 'setSchedule([false, true, true, true, true, true, false])'}
+							Weekdays
 				.form-group
 					.col-lg-offset-3.col-lg-9
 						%button.btn.btn-primary.btn-lg{type: 'submit'}
