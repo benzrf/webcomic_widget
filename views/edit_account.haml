@@ -1,0 +1,49 @@
+!!!
+%html
+	%head
+		%meta{charset: 'utf-8'}
+		%title Webcomic Tracker - Edit account
+		%script{src: "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"}
+		%link{rel: 'stylesheet', href: "//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"}
+		:css
+			.container {
+				width: 50%;
+			}
+	%body
+		.container
+			%h1 Editing your account
+			- if @error
+				.alert.alert-danger= @error
+			%form.form-horizontal{role: 'form', method: 'post'}
+				.form-group
+					%label.col-lg-3.control-label{for: 'password'}
+						Current Password
+					.col-lg-6
+						%input#password.form-control{type: 'password', name: 'password',
+							placeholder: 'Current Password'}
+				.form-group
+					%label.col-lg-3.control-label{for: 'new_password'}
+						New Password
+						%small (opt)
+					.col-lg-6
+						%input#password.form-control{type: 'password', name: 'new_password',
+							placeholder: 'New Password'}
+				.form-group
+					%label.col-lg-3.control-label{for: 'password_confirm'}
+						Confirm Password
+					.col-lg-6
+						%input#password_confirm.form-control{type: 'password', name: 'password_confirm',
+							placeholder: 'Confirm Password'}
+				.form-group
+					%label.col-lg-3.control-label{for: 'email'}
+						Email
+					.col-lg-6
+						%input#email.form-control{type: 'email', name: 'email',
+							placeholder: 'Email', value: params["email"] || @user[:email]}
+				.form-group
+					.col-lg-offset-3.col-lg-9
+						%button.btn.btn-primary.btn-lg{type: 'submit'}
+							Save
+						%a.btn.btn-default.btn-lg{href: url('/comics/')}
+							Cancel
+

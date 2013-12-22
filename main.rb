@@ -4,8 +4,8 @@ require 'sinatra'
 require 'sinatra/json'
 
 helpers do
-  def current_login_hash
-    login_hash(params['user'], params['password'])
+  def current_login_hash(pass_source='password')
+    login_hash(params['user'] || current_user, params[pass_source])
   end
 
   def current_user
@@ -213,5 +213,34 @@ post '/delete_comic/:comic', logged_in: true do
     delete_user_comic(current_user, params['comic'])
   end
   redirect to '/comics/'
+end
+
+get '/edit_account', logged_in: true do
+  @user = user(current_user)
+  haml :edit_account
+end
+
+post '/edit_account', logged_in: true do
+  needed_params = 'password', 'new_password', 'email'
+  halt 400, "invalid request" unless params.keys? needed_params
+  @user = user(current_user)
+  @error = case
+  when @user[:login_hash] != current_login_hash
+    "Incorrect password."
+  when params['new_password'] != params['password_confirm']
+    "The new passwords you entered don't match."
+  end
+  unless @error
+    email = params['email'].empty? ? nil : params['email']
+    updated_user = {name: current_user,
+                    email: email}
+    unless params['new_password'].empty?
+      updated_user[:login_hash] = current_login_hash('new_password')
+    end
+    update_user(updated_user)
+    redirect to '/comics/'
+  else
+    haml :edit_account
+  end
 end
 
