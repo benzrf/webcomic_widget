@@ -11,7 +11,8 @@ CREATE TABLE comics (
 CREATE TABLE users (
     name citext NOT NULL,
     login_hash text NOT NULL,
-    email text
+    email text,
+    profile_id citext NOT NULL
 );
 
 ALTER TABLE ONLY comics

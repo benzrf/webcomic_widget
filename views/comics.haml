@@ -59,6 +59,8 @@
 			.pull-right
 				%a.btn.btn-primary.btn-lg{href: url('/edit_account')}
 					Edit account
+				%a.btn.btn-primary.btn-lg{href: url("/profiles/#{current_user[:profile_id]}")}
+					Public profile
 				%a.btn.btn-danger.btn-lg{href: url('/logout')}
 					Log out
 			%table.table.table-hover

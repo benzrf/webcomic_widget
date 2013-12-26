@@ -21,6 +21,10 @@ def update_user(user, original=user)
   USERS.where(where).update(user)
 end
 
+def profile_id_user(profile_id)
+  USERS.where(profile_id: profile_id).first
+end
+
 def comics(name)
   COMICS.where(name: name).all
 end
@@ -46,6 +50,13 @@ end
 def user_comics(uname)
   comics = COMICS.where(uname: uname).order(:name).all
   comics.partition {|comic| updated? comic}.flatten 1
+end
+
+def user_profile_id_comics(profile_id)
+  joined = USERS.join(:comics, uname: :name)
+  comics_only = joined.select(:uname, :comics__name,
+                              :url, :schedule, :last_checked)
+  comics_only.where(profile_id: profile_id).order(:comics__name).all
 end
 
 def update_comic(comic, original=comic)

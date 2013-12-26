@@ -7,24 +7,28 @@ require 'bcrypt'
 
 helpers do
   def gen_hash(pass_source='password')
-    'bcrypt$' + BCrypt::Password.create(current_user + params[pass_source])
+    'bcrypt$' + BCrypt::Password.create(current_username + params[pass_source])
   end
 
   def password_correct?(pass_source='password')
     given = params[pass_source]
-    hash_col = user(current_user)[:login_hash]
+    hash_col = current_user[:login_hash]
     algo, hash = hash_col.split('$', 2)
     case algo
     when 'sha1'
-      given_hash = old_gen_hash(current_user, given)
+      given_hash = old_gen_hash(current_username, given)
       hash == given_hash
     when 'bcrypt'
-      BCrypt::Password.new(hash) == current_user + given
+      BCrypt::Password.new(hash) == current_username + given
     end
   end
 
+  def current_username
+    params['user'] || session['user'] || ''
+  end
+
   def current_user
-    params['user'] || session['user']
+    user(current_username)
   end
 
   def logged_in?
@@ -70,12 +74,12 @@ end
 post '/register', logged_in: false do
   halt 400, "invalid request" unless params.keys? 'user', 'password', 'email'
   @error = case
-  when params['user'].empty?
+  when current_username.empty?
     "Your username can't be blank."
-  when params['user'] !~ /\A\w+\Z/
-    "The username '#{params['user']}' contains non-alphanumeric characters."
-  when user(params['user'])
-    "The username '#{params['user']}' is already taken."
+  when current_username !~ /\A\w+\Z/
+    "The username '#{current_username}' contains non-alphanumeric characters."
+  when current_user
+    "The username '#{current_username}' is already taken."
   when params['password'].empty?
     "Your password can't be blank."
   when params['password'] != params['password_confirm']
@@ -83,9 +87,10 @@ post '/register', logged_in: false do
   end
   unless @error
     email = params['email'].empty? ? nil : params['email']
-    new_user = {name: params['user'],
+    new_user = {name: current_username,
                 login_hash: gen_hash,
-                email: email}
+                email: email,
+                profile_id: gen_profile_id(current_username)}
     add_user(new_user)
     haml :registered
   else
@@ -100,18 +105,18 @@ end
 post '/login', logged_in: false do
   halt 400, "invalid request" unless params.keys? 'user', 'password'
   @error = case
-  when params['user'].empty?
+  when current_username.empty?
     "You didn't provide a username."
   when params['password'].empty?
     "You didn't provide a password."
-  when !(login_user = user(params['user']))
+  when !current_user
     "Unknown user."
   when !password_correct?
     "Incorrect password."
   end
   unless @error
     session.options[:expire_after] = 31536000
-    session['user'] = params['user']
+    session['user'] = current_username
     redirect to '/comics/'
   else
     haml :login
@@ -124,7 +129,7 @@ get '/logout', logged_in: true do
 end
 
 get '/comics/?', logged_in: true do
-  @comics = user_comics(current_user)
+  @comics = user_comics(current_username)
   @comics.each do |comic|
     updated = updated? comic
     updates = updates_today? comic
@@ -135,14 +140,11 @@ get '/comics/?', logged_in: true do
 end
 
 get '/comics/:comic', logged_in: true do
-  comic = user_comic(current_user, params['comic'])
-  if comic
-    comic[:last_checked] = Date.today
-    update_comic(comic)
-    redirect comic[:url]
-  else
-    halt 404
-  end
+  comic = user_comic(current_username, params['comic'])
+  halt 404 unless comic
+  comic[:last_checked] = Date.today
+  update_comic(comic)
+  redirect comic[:url]
 end
 
 get '/add_comic', logged_in: true do
@@ -156,12 +158,12 @@ post '/add_comic', logged_in: true do
     "You didn't provide a name."
   when params['url'].empty?
     "You didn't provide a URL."
-  when user_comic(current_user, params['name'])
+  when user_comic(current_username, params['name'])
     "You're already tracking that comic."
   end
   unless @error
     schedule = LDAYS.map {|day| !!params["updates-#{day}"]}
-    new_comic = {uname: current_user,
+    new_comic = {uname: current_username,
                  name: params['name'],
                  url: params['url'],
                  schedule: schedule,
@@ -188,17 +190,14 @@ post '/complete', provides: 'json' do
 end
 
 get '/edit_comic/:comic', logged_in: true do
-  @comic = user_comic(current_user, params['comic'])
-  if @comic
-    haml :edit_comic
-  else
-    halt 404
-  end
+  @comic = user_comic(current_username, params['comic'])
+  halt 404 unless @comic
+  haml :edit_comic
 end
 
 post '/edit_comic/:comic', logged_in: true do
   halt 400, "invalid request" unless params.keys? 'url'
-  @comic = user_comic(current_user, params['comic'])
+  @comic = user_comic(current_username, params['comic'])
   halt 404 unless @comic
   @error = case
   when params['name'].empty?
@@ -208,7 +207,7 @@ post '/edit_comic/:comic', logged_in: true do
   end
   unless @error
     schedule = LDAYS.map {|day| !!params["updates-#{day}"]}
-    updated_comic = {uname: current_user,
+    updated_comic = {uname: current_username,
                      name: params['name'],
                      url: params['url'],
                      schedule: schedule,
@@ -221,32 +220,28 @@ post '/edit_comic/:comic', logged_in: true do
 end
 
 get '/delete_comic/:comic', logged_in: true do
-  @comic = user_comic(current_user, params['comic'])
-  if @comic
-    haml :delete_comic
-  else
-    halt 404
-  end
+  @comic = user_comic(current_username, params['comic'])
+  halt 404 unless @comic
+  haml :delete_comic
 end
 
 post '/delete_comic/:comic', logged_in: true do
-  @comic = user_comic(current_user, params['comic'])
+  @comic = user_comic(current_username, params['comic'])
   halt 404 unless @comic
   if @comic and params['confirm'] == 'true'
-    delete_user_comic(current_user, params['comic'])
+    delete_user_comic(current_username, params['comic'])
   end
   redirect to '/comics/'
 end
 
 get '/edit_account', logged_in: true do
-  @user = user(current_user)
+  @user = current_user
   haml :edit_account
 end
 
 post '/edit_account', logged_in: true do
   needed_params = 'password', 'new_password', 'email'
   halt 400, "invalid request" unless params.keys? needed_params
-  @user = user(current_user)
   @error = case
   when !password_correct?
     "Incorrect password."
@@ -255,7 +250,7 @@ post '/edit_account', logged_in: true do
   end
   unless @error
     email = params['email'].empty? ? nil : params['email']
-    updated_user = {name: current_user,
+    updated_user = {name: current_username,
                     email: email}
     unless params['new_password'].empty?
       updated_user[:login_hash] = gen_hash('new_password')
@@ -263,7 +258,27 @@ post '/edit_account', logged_in: true do
     update_user(updated_user)
     redirect to '/comics/'
   else
+    @user = current_user
     haml :edit_account
   end
+end
+
+get '/profiles/:profile_id' do
+  @user = profile_id_user(params['profile_id'])
+  halt 404 unless @user
+  @profile_comics = user_profile_id_comics(params['profile_id'])
+  @cur_comics = user_comics(current_username)
+  haml :profile
+end
+
+post '/copy_comic', logged_in: true do
+  halt 400, "invalid request" unless params.keys? 'profile_id', 'comic'
+  comics = user_profile_id_comics(params['profile_id'])
+  copied_comic = comics.detect {|comic| comic[:name] == params['comic']}
+  halt 400 unless copied_comic
+  copied_comic[:uname] = current_username
+  copied_comic[:last_checked] = nil
+  add_comic(copied_comic)
+  redirect to "/profiles/#{params['profile_id']}"
 end
 

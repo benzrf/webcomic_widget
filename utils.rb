@@ -1,4 +1,5 @@
 require 'date'
+require 'bcrypt'
 require 'digest/sha1'
 
 class Hash
@@ -8,6 +9,10 @@ class Hash
   def keys?(*keys)
     keys.flatten.all? {|k| key? k}
   end
+end
+
+def gen_profile_id(username)
+  BCrypt::Password.create(username).checksum.tr('./', '-_')
 end
 
 HASH_SALT = ENV['HASH_SALT'] || ''
