@@ -37,6 +37,10 @@ helpers do
   def csrf_tag
     Rack::Csrf.csrf_tag(env)
   end
+
+  def analytics_tag
+    haml :analytics if settings.environment != :development
+  end
 end
 
 SESSION_SECRET = ENV['SECRET_KEY'] || 'dev secret'
