@@ -85,7 +85,7 @@ end
 get '/comics/:comic', logged_in: true do
   comic = user_comic(current_username, params['comic'])
   halt 404 unless comic
-  comic[:last_checked] = Date.today
+  comic[:last_checked] = (Time.now.utc - (5 * 60 * 60)).to_date
   update_comic(comic)
   redirect comic[:url]
 end
