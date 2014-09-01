@@ -48,6 +48,7 @@ set :session_secret, SESSION_SECRET
 enable :sessions
 
 use Rack::Csrf, skip: ['POST:/complete']
+set :protection, except: :session_hijacking
 
 set :haml, escape_html: true
 
