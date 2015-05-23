@@ -82,8 +82,8 @@ get '/comics/?', logged_in: true do
   haml :comics
 end
 
-get '/comics/:comic', logged_in: true do
-  comic = user_comic(current_username, params['comic'])
+get %r(/comics/(.+)), logged_in: true do |par_comic|
+  comic = user_comic(current_username, par_comic)
   halt 404 unless comic
   comic[:last_checked] = (Time.now.utc - (5 * 60 * 60)).to_date
   update_comic(comic)
@@ -132,15 +132,15 @@ post '/complete', provides: 'json' do
   end
 end
 
-get '/edit_comic/:comic', logged_in: true do
-  @comic = user_comic(current_username, params['comic'])
+get %r(/edit_comic/(.+)), logged_in: true do |par_comic|
+  @comic = user_comic(current_username, par_comic)
   halt 404 unless @comic
   haml :edit_comic
 end
 
-post '/edit_comic/:comic', logged_in: true do
+post %r(/edit_comic/(.+)), logged_in: true do |par_comic|
   halt 400, "invalid request" unless params.keys? 'url'
-  @comic = user_comic(current_username, params['comic'])
+  @comic = user_comic(current_username, par_comic)
   halt 404 unless @comic
   @error = case
   when params['name'].empty?
@@ -162,17 +162,17 @@ post '/edit_comic/:comic', logged_in: true do
   end
 end
 
-get '/delete_comic/:comic', logged_in: true do
-  @comic = user_comic(current_username, params['comic'])
+get %r(/delete_comic/(.+)), logged_in: true do |par_comic|
+  @comic = user_comic(current_username, par_comic)
   halt 404 unless @comic
   haml :delete_comic
 end
 
-post '/delete_comic/:comic', logged_in: true do
-  @comic = user_comic(current_username, params['comic'])
+post %r(/delete_comic/(.+)), logged_in: true do |par_comic|
+  @comic = user_comic(current_username, par_comic)
   halt 404 unless @comic
   if @comic and params['confirm'] == 'true'
-    delete_user_comic(current_username, params['comic'])
+    delete_user_comic(current_username, par_comic)
   end
   redirect to '/comics/'
 end
